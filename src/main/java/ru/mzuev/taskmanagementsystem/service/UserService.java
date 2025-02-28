@@ -20,7 +20,9 @@ public class UserService {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Пользователь с email " + email + " уже существует");
         }
-        User user = new User(email, passwordEncoder.encode(password), "ROLE_USER");
+        // Если в системе нет ни одного пользователя, назначаем роль админа
+        String role = (userRepository.count() == 0) ? "ROLE_ADMIN" : "ROLE_USER";
+        User user = new User(email, passwordEncoder.encode(password), role);
         return userRepository.save(user);
     }
 
