@@ -1,5 +1,7 @@
 package ru.mzuev.taskmanagementsystem.controller;
 
+import ru.mzuev.taskmanagementsystem.dto.AuthRequest;
+import ru.mzuev.taskmanagementsystem.dto.AuthResponse;
 import ru.mzuev.taskmanagementsystem.model.User;
 import ru.mzuev.taskmanagementsystem.security.JwtUtil;
 import ru.mzuev.taskmanagementsystem.service.UserService;
@@ -22,27 +24,10 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
-    // DTO для запросов регистрации и логина
-    public static class AuthRequest {
-        public String email;
-        public String password;
-    }
-
-    // DTO для ответа логина
-    public static class AuthResponse {
-        public String email;
-        public String token;
-
-        public AuthResponse(String email, String token) {
-            this.email = email;
-            this.token = token;
-        }
-    }
-
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest authRequest) {
         try {
-            userService.registerUser(authRequest.email, authRequest.password);
+            userService.registerUser(authRequest.getEmail(), authRequest.getPassword());
             return ResponseEntity.ok("Пользователь зарегистрирован успешно");
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
@@ -54,12 +39,12 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.email, authRequest.password)
+                    new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
             );
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body("Неверные email или пароль");
         }
-        User user = userService.findByEmail(authRequest.email);
+        User user = userService.findByEmail(authRequest.getEmail());
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
         return ResponseEntity.ok(new AuthResponse(user.getEmail(), token));
     }

@@ -31,6 +31,13 @@ public class TaskService {
         return taskRepository.save(existingTask);
     }
 
+    public Task updateTaskStatus(Long taskId, String status) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Задача не найдена с id " + taskId));
+        task.setStatus(status);
+        return taskRepository.save(task);
+    }
+
     public void deleteTask(Long taskId) {
         if (!taskRepository.existsById(taskId)) {
             throw new RuntimeException("Задача не найдена с id " + taskId);
@@ -43,7 +50,6 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("Задача не найдена с id " + taskId));
     }
 
-    // получение страницы с задачей по id автора
     public Page<Task> getTasksByAuthor(Long authorId, Pageable pageable) {
         return taskRepository.findByAuthorId(authorId, pageable);
     }
