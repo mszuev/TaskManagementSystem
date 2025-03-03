@@ -71,4 +71,11 @@ public class Comment {
     public void setUser(User user) {
         this.user = user;
     }
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }
