@@ -1,5 +1,6 @@
 package ru.mzuev.taskmanagementsystem.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -20,6 +21,7 @@ public class Comment {
     // Задача, к которой относится коммент
     @ManyToOne
     @JoinColumn(name = "task_id", nullable = false)
+    @JsonBackReference
     private Task task;
 
     // Пользователь, оставивший коммент
