@@ -29,6 +29,10 @@ public class User {
         this.role = role;
     }
 
+    private void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }
