@@ -1,5 +1,6 @@
 package ru.mzuev.taskmanagementsystem;
 
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import ru.mzuev.taskmanagementsystem.dto.AuthRequest;
 import ru.mzuev.taskmanagementsystem.dto.AuthResponse;
@@ -14,9 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import java.lang.reflect.Method;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class CommentControllerTest {
@@ -104,8 +105,13 @@ public class CommentControllerTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<CommentRequest> entity = new HttpEntity<>(commentRequest, headers);
 
+        // Выполняем запрос
         ResponseEntity<String> response = restTemplate.postForEntity("/api/comments", entity, String.class);
-        // Ожидаем, что обычный юзер, не являющийся исполнителем, не сможет добавить комментарий
+
+        // Проверяем статус ответа
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+
+        // Проверяем тело ответа
+        assertThat(response.getBody()).contains("Пользователь может комментировать только свои задачи.");
     }
 }
