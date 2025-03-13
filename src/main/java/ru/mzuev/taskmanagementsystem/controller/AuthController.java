@@ -1,7 +1,11 @@
 package ru.mzuev.taskmanagementsystem.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import ru.mzuev.taskmanagementsystem.dto.AuthRequest;
 import ru.mzuev.taskmanagementsystem.dto.AuthResponse;
+import ru.mzuev.taskmanagementsystem.exception.InvalidCredentialsException;
+import ru.mzuev.taskmanagementsystem.exception.UserAlreadyExistsException;
 import ru.mzuev.taskmanagementsystem.model.User;
 import ru.mzuev.taskmanagementsystem.security.JwtUtil;
 import ru.mzuev.taskmanagementsystem.service.UserService;
@@ -29,8 +33,8 @@ public class AuthController {
         try {
             userService.registerUser(authRequest.getEmail(), authRequest.getPassword());
             return ResponseEntity.ok("Пользователь зарегистрирован успешно");
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+        } catch (UserAlreadyExistsException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
         }
     }
 
@@ -41,8 +45,8 @@ public class AuthController {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
             );
-        } catch (Exception ex) {
-            return ResponseEntity.badRequest().body("Неверные email или пароль");
+        } catch (BadCredentialsException ex) {
+            throw new InvalidCredentialsException();
         }
         User user = userService.findByEmail(authRequest.getEmail());
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());

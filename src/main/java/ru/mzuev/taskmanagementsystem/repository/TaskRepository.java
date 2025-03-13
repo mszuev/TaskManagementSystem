@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface TaskRepository extends JpaRepository<Task, Long> {
     Page<Task> findByAuthorId(Long authorId, Pageable pageable);
     Page<Task> findByExecutorId(Long executorId, Pageable pageable);
+    boolean existsByTitle(String title);
 }
