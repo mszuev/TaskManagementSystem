@@ -1,117 +1,123 @@
 package ru.mzuev.taskmanagementsystem;
 
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import ru.mzuev.taskmanagementsystem.dto.AuthRequest;
-import ru.mzuev.taskmanagementsystem.dto.AuthResponse;
-import ru.mzuev.taskmanagementsystem.dto.CommentRequest;
-import ru.mzuev.taskmanagementsystem.model.Comment;
-import ru.mzuev.taskmanagementsystem.model.Task;
-import ru.mzuev.taskmanagementsystem.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
-import java.lang.reflect.Method;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import ru.mzuev.taskmanagementsystem.dto.AuthRequest;
+import ru.mzuev.taskmanagementsystem.dto.AuthResponse;
+import ru.mzuev.taskmanagementsystem.dto.CommentRequest;
+import ru.mzuev.taskmanagementsystem.dto.TaskDTO;
+import ru.mzuev.taskmanagementsystem.model.User;
+import ru.mzuev.taskmanagementsystem.service.UserService;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ActiveProfiles("test")
 public class CommentControllerTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
+    @Autowired
+    private UserService userService;
 
     private String adminToken;
-    private String userToken;
-    private Long taskId;
-
-    private final Long ADMIN_ID = 1L;
-    private final Long EXECUTOR_ID = 2L;
-
-    // Устанавливаем id через рефлексию для доступа к сеттеру
-    private void setUserId(User user, Long id) throws Exception {
-        Method setIdMethod = User.class.getDeclaredMethod("setId", Long.class);
-        setIdMethod.setAccessible(true);
-        setIdMethod.invoke(user, id);
-    }
+    private String executorToken;
+    private String anotheUserToken;
+    private Long adminId;
+    private Long executorId;
+    private Long createdTaskId;
 
     @BeforeEach
-    public void setup() throws Exception {
-        // Регистрируем администратора (первый зареганый пользователь становится админом)
-        AuthRequest adminRequest = new AuthRequest("admin@example.com", "adminPass");
-        restTemplate.postForEntity("/api/auth/register", adminRequest, String.class);
-        ResponseEntity<AuthResponse> adminLoginResponse = restTemplate.postForEntity("/api/auth/login", adminRequest, AuthResponse.class);
-        adminToken = adminLoginResponse.getBody().getToken();
+    void setup() {
+        // Регистрация админа
+        AuthRequest adminRegisterRequest = new AuthRequest("admin@test.com", "adminPass");
+        restTemplate.postForEntity("/api/auth/register", adminRegisterRequest, String.class);
+        // Аутентифицируем админа
+        AuthResponse adminAuth = restTemplate.postForObject("/api/auth/login", adminRegisterRequest, AuthResponse.class);
+        adminToken = "Bearer " + adminAuth.getToken();
+        adminId = userService.findByEmail("admin@test.com").getId();
 
-        // Регистрируем обычного юзера-исполнителя
-        AuthRequest userRequest = new AuthRequest("user@example.com", "userPass");
-        restTemplate.postForEntity("/api/auth/register", userRequest, String.class);
-        ResponseEntity<AuthResponse> userLoginResponse = restTemplate.postForEntity("/api/auth/login", userRequest, AuthResponse.class);
-        userToken = userLoginResponse.getBody().getToken();
+        // Регистрация исполнителя
+        AuthRequest executorRegisterRequest = new AuthRequest("executor@test.com", "execPass");
+        restTemplate.postForEntity("/api/auth/register", executorRegisterRequest, String.class);
+        // Аутентифицируем исполнителя
+        AuthResponse executorAuth = restTemplate.postForObject("/api/auth/login", executorRegisterRequest, AuthResponse.class);
+        executorToken = "Bearer " + executorAuth.getToken();
+        executorId = userService.findByEmail("executor@test.com").getId();
 
-        // Создаем задачу, назначая автором админа и исполнителем юзера
-        Task task = new Task();
-        task.setTitle("Task for Comment");
-        task.setDescription("Task to test comments");
-        task.setStatus("в ожидании");
-        task.setPriority("средний");
+        // Регистрация НЕ исполнителя
+        AuthRequest anotherUserRegisterRequest = new AuthRequest("anotheruser@test.com", "anotherPass");
+        restTemplate.postForEntity("/api/auth/register", anotherUserRegisterRequest, String.class);
+        // Аутентифицируем НЕ исполнителя
+        AuthResponse anotherUserAuth = restTemplate.postForObject("/api/auth/login", anotherUserRegisterRequest, AuthResponse.class);
+        anotheUserToken = "Bearer " + anotherUserAuth.getToken();
 
-        User adminUser = new User();
-        setUserId(adminUser, ADMIN_ID);
-        task.setAuthor(adminUser);
-
-        User executor = new User();
-        setUserId(executor, EXECUTOR_ID);
-        task.setExecutor(executor);
+        // Создаем тестовую задачу
+        TaskDTO taskDTO = new TaskDTO();
+        taskDTO.setTitle("Test Task");
+        taskDTO.setDescription("Test Description");
+        taskDTO.setStatus("в очереди");
+        taskDTO.setPriority("высокий");
+        taskDTO.setAuthorId(adminId);
+        taskDTO.setExecutorId(executorId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + adminToken);
-        HttpEntity<Task> taskEntity = new HttpEntity<>(task, headers);
-        ResponseEntity<Task> taskResponse = restTemplate.postForEntity("/api/tasks", taskEntity, Task.class);
-        taskId = taskResponse.getBody().getId();
+        headers.set("Authorization", adminToken);
+
+        ResponseEntity<TaskDTO> response = restTemplate.postForEntity(
+                "/api/tasks",
+                new HttpEntity<>(taskDTO, headers),
+                TaskDTO.class
+        );
+
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            System.err.println("Ошибка при создании тестовой задачи: " + response.getStatusCode());
+            System.err.println(response.getBody());
+        }
+        createdTaskId = response.getBody().getId();
     }
 
     @Test
-    public void testCreateCommentByExecutor() {
-        // Попытка создать комментарий от имени юзера-исполнителя
-        CommentRequest commentRequest = new CommentRequest("Comment from executor", taskId);
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + userToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<CommentRequest> entity = new HttpEntity<>(commentRequest, headers);
+    public void testCreateCommentByExecutor_Success() {
+        CommentRequest commentRequest = new CommentRequest("Test Comment", createdTaskId);
 
-        ResponseEntity<Comment> response = restTemplate.postForEntity("/api/comments", entity, Comment.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        Comment createdComment = response.getBody();
-        assertThat(createdComment).isNotNull();
-        assertThat(createdComment.getContent()).isEqualTo("Comment from executor");
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", executorToken); // Используем токен пользователя
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<CommentRequest> request = new HttpEntity<>(commentRequest, headers);
+
+        // Отправляем POST-запрос для создания комментария
+        ResponseEntity<String> response = restTemplate.postForEntity("/api/comments", request, String.class);
+
+        // Проверяем, что комментарий успешно создан
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK); // Статус 200
+        assertThat(response.getBody()).contains("Test Comment"); // Проверяем содержание комментария
     }
 
     @Test
-    public void testCreateCommentByNonExecutor() {
-        // Регистрируем еще одного юзера, который не является исполнителем задачи
-        AuthRequest otherUserRequest = new AuthRequest("other@example.com", "otherPass");
-        restTemplate.postForEntity("/api/auth/register", otherUserRequest, String.class);
-        ResponseEntity<AuthResponse> otherLoginResponse = restTemplate.postForEntity("/api/auth/login", otherUserRequest, AuthResponse.class);
-        String otherUserToken = otherLoginResponse.getBody().getToken();
+    public void testCreateComment_NonExecutorRole_ShouldReturnForbidden() {
+        CommentRequest commentRequest = new CommentRequest("Unauthorized Comment", createdTaskId);
 
-        CommentRequest commentRequest = new CommentRequest("Comment from non-executor", taskId);
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + otherUserToken);
+        headers.set("Authorization", anotheUserToken); // Используем токен не исполнителя
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<CommentRequest> entity = new HttpEntity<>(commentRequest, headers);
+        HttpEntity<CommentRequest> request = new HttpEntity<>(commentRequest, headers);
 
-        // Выполняем запрос
-        ResponseEntity<String> response = restTemplate.postForEntity("/api/comments", entity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/comments",
+                HttpMethod.POST,
+                request,
+                String.class
+        );
 
-        // Проверяем статус ответа
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-
-        // Проверяем тело ответа
-        assertThat(response.getBody()).contains("Пользователь может комментировать только свои задачи.");
+        assertThat(response.getBody()).contains("Доступ запрещен");
     }
 }
