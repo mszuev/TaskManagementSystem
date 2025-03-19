@@ -2,13 +2,13 @@ package ru.mzuev.taskmanagementsystem.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.mzuev.taskmanagementsystem.dto.CommentDTO;
 import ru.mzuev.taskmanagementsystem.dto.CommentRequest;
 import ru.mzuev.taskmanagementsystem.exception.AccessDeniedException;
 import ru.mzuev.taskmanagementsystem.exception.TaskNotFoundException;
-import ru.mzuev.taskmanagementsystem.model.Comment;
 import ru.mzuev.taskmanagementsystem.service.CommentService;
 
 @RestController
@@ -23,23 +23,13 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<?> createComment(@RequestBody CommentRequest commentRequest) {
-        try {
-            Comment createdComment = commentService.createComment(commentRequest);
-            return ResponseEntity.ok(createdComment);
-        } catch (TaskNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        } catch (AccessDeniedException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-        }
+        CommentDTO createdCommentDTO = commentService.createComment(commentRequest);
+        return ResponseEntity.ok(createdCommentDTO);
     }
 
     @GetMapping("/by-task/{taskId}")
     public ResponseEntity<?> getCommentsByTask(@PathVariable Long taskId, Pageable pageable) {
-        try {
-            Page<Comment> comments = commentService.getCommentsByTask(taskId, pageable);
-            return ResponseEntity.ok(comments);
-        } catch (TaskNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        }
+        Page<CommentDTO> comments = commentService.getCommentsByTask(taskId, pageable);
+        return ResponseEntity.ok(comments);
     }
 }
