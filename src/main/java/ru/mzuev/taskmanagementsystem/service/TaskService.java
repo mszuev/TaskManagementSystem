@@ -1,53 +1,60 @@
 package ru.mzuev.taskmanagementsystem.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.mzuev.taskmanagementsystem.dto.TaskDTO;
 import ru.mzuev.taskmanagementsystem.exception.AccessDeniedException;
 import ru.mzuev.taskmanagementsystem.exception.TaskAlreadyExistsException;
 import ru.mzuev.taskmanagementsystem.exception.TaskNotFoundException;
 import ru.mzuev.taskmanagementsystem.exception.UserNotFoundException;
+import ru.mzuev.taskmanagementsystem.mapper.TaskMapper;
 import ru.mzuev.taskmanagementsystem.model.Task;
 import ru.mzuev.taskmanagementsystem.repository.TaskRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 @Service
 public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserService userService;
+    private final TaskMapper taskMapper;
 
-    public TaskService(TaskRepository taskRepository, UserService userService) {
+    public TaskService(TaskRepository taskRepository, UserService userService, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
         this.userService = userService;
+        this.taskMapper = taskMapper;
     }
 
-    public Task createTask(Task task) {
-        // Проверяем, существует ли задача с таким же названием
-        if (taskRepository.existsByTitle(task.getTitle())) {
-            throw new TaskAlreadyExistsException(task.getTitle());
+    @Transactional
+    public TaskDTO createTask(TaskDTO taskDTO) {
+        if (taskRepository.existsByTitle(taskDTO.getTitle())) {
+            throw new TaskAlreadyExistsException(taskDTO.getTitle());
         }
-        return taskRepository.save(task);
+        Task task = taskMapper.toEntity(taskDTO);
+        Task savedTask = taskRepository.save(task);
+        return taskMapper.toDTO(savedTask);
     }
 
-    public Task updateTask(Long taskId, Task updatedTask) {
+    @Transactional
+    public TaskDTO updateTask(Long taskId, TaskDTO taskDTO) {
         Task existingTask = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException(taskId));
-        existingTask.setTitle(updatedTask.getTitle());
-        existingTask.setDescription(updatedTask.getDescription());
-        existingTask.setStatus(updatedTask.getStatus());
-        existingTask.setPriority(updatedTask.getPriority());
-        existingTask.setAuthor(updatedTask.getAuthor());
-        existingTask.setExecutor(updatedTask.getExecutor());
-        return taskRepository.save(existingTask);
+        taskMapper.updateEntity(taskDTO, existingTask);
+        Task updatedTask = taskRepository.save(existingTask);
+        return taskMapper.toDTO(updatedTask);
     }
 
-    public Task updateTaskStatus(Long taskId, String status) {
+    @Transactional
+    public TaskDTO updateTaskStatus(Long taskId, String status) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException(taskId));
         task.setStatus(status);
-        return taskRepository.save(task);
+        Task updatedTask = taskRepository.save(task);
+        return taskMapper.toDTO(updatedTask);
     }
 
+    @Transactional
     public void deleteTask(Long taskId) {
         if (!taskRepository.existsById(taskId)) {
             throw new TaskNotFoundException(taskId);
@@ -55,31 +62,43 @@ public class TaskService {
         taskRepository.deleteById(taskId);
     }
 
-    public Task getTaskById(Long taskId) {
+    @Transactional(readOnly = true)
+    public TaskDTO getTaskById(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
+        return taskMapper.toDTO(task);
+    }
+
+    @Transactional(readOnly = true)
+    public Task getTaskEntityById(Long taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException(taskId));
     }
 
-    public Page<Task> getTasksByAuthor(Long authorId, Pageable pageable) {
-        // Проверяем, существует ли пользователь
+    @Transactional(readOnly = true)
+    public Page<TaskDTO> getTasksByAuthor(Long authorId, Pageable pageable) {
         if (!userService.existsById(authorId)) {
             throw new UserNotFoundException("Автор не найден с id " + authorId);
         }
-        return taskRepository.findByAuthorId(authorId, pageable);
+        Page<Task> tasks = taskRepository.findByAuthorId(authorId, pageable);
+        return tasks.map(taskMapper::toDTO);
     }
 
-    public Page<Task> getTasksByExecutor(Long executorId, Pageable pageable) {
-        // Проверяем, существует ли пользователь
+    @Transactional(readOnly = true)
+    public Page<TaskDTO> getTasksByExecutor(Long executorId, Pageable pageable) {
         if (!userService.existsById(executorId)) {
             throw new UserNotFoundException("Исполнитель не найден с id " + executorId);
         }
-        return taskRepository.findByExecutorId(executorId, pageable);
+        Page<Task> tasks = taskRepository.findByExecutorId(executorId, pageable);
+        return tasks.map(taskMapper::toDTO);
     }
 
+    @Transactional(readOnly = true)
     public boolean existsById(Long taskId) {
         return taskRepository.existsById(taskId);
     }
 
+    @Transactional(readOnly = true)
     public boolean isExecutor(Long taskId, String email) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException(taskId));
