@@ -35,10 +35,9 @@ public class CommentService {
 
         Task task = taskService.getTaskEntityById(commentRequest.getTaskId());
 
-        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-            if (task.getExecutor() == null || !currentUser.getEmail().equals(task.getExecutor().getEmail())) {
-                throw new AccessDeniedException("Пользователь может комментировать только свои задачи.");
-            }
+        // Если пользователь не админ и не является исполнителем задачи, выбрасываем исключение
+        if (!isAdmin(auth) && (task.getExecutor() == null || !currentUser.getEmail().equals(task.getExecutor().getEmail()))) {
+            throw new AccessDeniedException("Пользователь может комментировать только свои задачи.");
         }
 
         Comment comment = new Comment();
@@ -57,5 +56,10 @@ public class CommentService {
         }
         Page<Comment> comments = commentRepository.findByTaskId(taskId, pageable);
         return comments.map(commentMapper::toDTO);
+    }
+
+    private boolean isAdmin(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
     }
 }
