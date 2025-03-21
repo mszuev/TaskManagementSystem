@@ -8,16 +8,14 @@ import ru.mzuev.taskmanagementsystem.dto.TaskDTO;
 import ru.mzuev.taskmanagementsystem.service.TaskService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/tasks")
+@RequiredArgsConstructor
 public class TaskController {
 
     private final TaskService taskService;
-
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")

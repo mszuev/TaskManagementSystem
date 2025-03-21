@@ -1,20 +1,16 @@
 package ru.mzuev.taskmanagementsystem.mapper;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.mzuev.taskmanagementsystem.dto.TaskDTO;
 import ru.mzuev.taskmanagementsystem.model.Task;
 import ru.mzuev.taskmanagementsystem.service.UserService;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class TaskMapper {
 
     private final UserService userService;
-
-    @Autowired
-    public TaskMapper(UserService userService) {
-        this.userService = userService;
-    }
 
     public TaskDTO toDTO(Task task) {
         TaskDTO taskDTO = new TaskDTO();

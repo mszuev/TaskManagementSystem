@@ -1,5 +1,6 @@
 package ru.mzuev.taskmanagementsystem.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,17 +15,12 @@ import ru.mzuev.taskmanagementsystem.model.Task;
 import ru.mzuev.taskmanagementsystem.repository.TaskRepository;
 
 @Service
+@RequiredArgsConstructor
 public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserService userService;
     private final TaskMapper taskMapper;
-
-    public TaskService(TaskRepository taskRepository, UserService userService, TaskMapper taskMapper) {
-        this.taskRepository = taskRepository;
-        this.userService = userService;
-        this.taskMapper = taskMapper;
-    }
 
     @Transactional
     public TaskDTO createTask(TaskDTO taskDTO) {

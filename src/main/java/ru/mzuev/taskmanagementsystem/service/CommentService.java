@@ -1,5 +1,6 @@
 package ru.mzuev.taskmanagementsystem.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -18,19 +19,13 @@ import ru.mzuev.taskmanagementsystem.model.User;
 import ru.mzuev.taskmanagementsystem.repository.CommentRepository;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final TaskService taskService;
     private final UserService userService;
     private final CommentMapper commentMapper;
-
-    public CommentService(CommentRepository commentRepository, TaskService taskService, UserService userService, CommentMapper commentMapper) {
-        this.commentRepository = commentRepository;
-        this.taskService = taskService;
-        this.userService = userService;
-        this.commentMapper = commentMapper;
-    }
 
     @Transactional
     public CommentDTO createComment(CommentRequest commentRequest) {
