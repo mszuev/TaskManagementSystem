@@ -1,5 +1,6 @@
 package ru.mzuev.taskmanagementsystem.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class TaskController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TaskDTO> createTask(@RequestBody TaskDTO taskDTO) {
+    public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO) {
         TaskDTO createdTaskDTO = taskService.createTask(taskDTO);
         return ResponseEntity.ok(createdTaskDTO);
     }

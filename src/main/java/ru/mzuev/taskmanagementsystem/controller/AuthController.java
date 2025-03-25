@@ -1,5 +1,6 @@
 package ru.mzuev.taskmanagementsystem.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 import ru.mzuev.taskmanagementsystem.dto.AuthRequest;
@@ -23,13 +24,13 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody AuthRequest authRequest) {
-        User user = userService.registerUser(authRequest.getEmail(), authRequest.getPassword());
+    public ResponseEntity<?> register(@Valid @RequestBody AuthRequest authRequest) {
+        userService.registerUser(authRequest.getEmail(), authRequest.getPassword());
         return ResponseEntity.ok("Пользователь зарегистрирован успешно");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())

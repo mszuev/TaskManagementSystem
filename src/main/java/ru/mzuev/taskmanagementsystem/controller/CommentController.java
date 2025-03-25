@@ -1,5 +1,6 @@
 package ru.mzuev.taskmanagementsystem.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public ResponseEntity<?> createComment(@RequestBody CommentRequest commentRequest) {
+    public ResponseEntity<?> createComment(@Valid @RequestBody CommentRequest commentRequest) {
         CommentDTO createdCommentDTO = commentService.createComment(commentRequest);
         return ResponseEntity.ok(createdCommentDTO);
     }
