@@ -1,14 +1,40 @@
 package ru.mzuev.taskmanagementsystem.exception;
 
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.validation.FieldError;
 import org.springframework.http.HttpStatus;
 import java.time.Instant;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // Для обработки ошибок валидации DTO (@Valid)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidationExceptions(MethodArgumentNotValidException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Ошибка валидации данных"
+        );
+
+        // Собираем ошибки в формате { "field": "message" }
+        Map<String, String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        DefaultMessageSourceResolvable::getDefaultMessage // Берём сообщение из messages.properties
+                ));
+
+        problemDetail.setProperty("errors", errors);
+        return problemDetail;
+    }
 
     @ExceptionHandler(TaskNotFoundException.class)
     public ProblemDetail handleTaskNotFound(TaskNotFoundException ex) {
