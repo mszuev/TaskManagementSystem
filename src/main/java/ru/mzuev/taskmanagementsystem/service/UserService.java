@@ -40,6 +40,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public User findById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден с id " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 }
