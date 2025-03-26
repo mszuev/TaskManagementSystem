@@ -5,8 +5,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 import ru.mzuev.taskmanagementsystem.dto.AuthRequest;
 import ru.mzuev.taskmanagementsystem.dto.AuthResponse;
+import ru.mzuev.taskmanagementsystem.dto.UserDTO;
 import ru.mzuev.taskmanagementsystem.exception.InvalidCredentialsException;
-import ru.mzuev.taskmanagementsystem.model.User;
 import ru.mzuev.taskmanagementsystem.security.JwtUtil;
 import ru.mzuev.taskmanagementsystem.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +24,13 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody AuthRequest authRequest) {
-        userService.registerUser(authRequest.getEmail(), authRequest.getPassword());
-        return ResponseEntity.ok("Пользователь зарегистрирован успешно");
+    public ResponseEntity<UserDTO> register(@Valid @RequestBody AuthRequest authRequest) {
+        UserDTO userDTO = userService.registerUser(authRequest.getEmail(), authRequest.getPassword());
+        return ResponseEntity.ok(userDTO);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest authRequest) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
@@ -38,8 +38,8 @@ public class AuthController {
         } catch (BadCredentialsException ex) {
             throw new InvalidCredentialsException();
         }
-        User user = userService.findByEmail(authRequest.getEmail());
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return ResponseEntity.ok(new AuthResponse(user.getEmail(), token));
+        UserDTO userDTO = userService.findDTOByEmail(authRequest.getEmail());
+        String token = jwtUtil.generateToken(userDTO.getEmail(), userDTO.getRole());
+        return ResponseEntity.ok(new AuthResponse(userDTO.getEmail(), token));
     }
 }
