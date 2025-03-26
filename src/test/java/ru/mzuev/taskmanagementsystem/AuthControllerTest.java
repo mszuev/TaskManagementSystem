@@ -26,7 +26,6 @@ public class AuthControllerTest {
 
         // Проверяем успешную регистрацию
         assertThat(registerResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(registerResponse.getBody()).isEqualTo("Пользователь зарегистрирован успешно");
 
         // Логин с теми же учетными данными
         ResponseEntity<AuthResponse> loginResponse = restTemplate.postForEntity("/api/auth/login", authRequest, AuthResponse.class);

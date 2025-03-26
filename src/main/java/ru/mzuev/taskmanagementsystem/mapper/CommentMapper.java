@@ -27,7 +27,7 @@ public class CommentMapper {
         Comment comment = new Comment();
         comment.setContent(commentDTO.getContent());
         comment.setTask(taskService.getTaskEntityById(commentDTO.getTaskId()));
-        comment.setUser(userService.findById(commentDTO.getUserId()));
+        comment.setUser(userService.findEntityById(commentDTO.getUserId()));
         return comment;
     }
 }

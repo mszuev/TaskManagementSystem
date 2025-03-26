@@ -30,9 +30,9 @@ public class TaskMapper {
         task.setDescription(taskDTO.getDescription());
         task.setStatus(taskDTO.getStatus());
         task.setPriority(taskDTO.getPriority());
-        task.setAuthor(userService.findById(taskDTO.getAuthorId()));
+        task.setAuthor(userService.findEntityById(taskDTO.getAuthorId()));
         if (taskDTO.getExecutorId() != null) {
-            task.setExecutor(userService.findById(taskDTO.getExecutorId()));
+            task.setExecutor(userService.findEntityById(taskDTO.getExecutorId()));
         }
         return task;
     }
@@ -42,9 +42,9 @@ public class TaskMapper {
         task.setDescription(taskDTO.getDescription());
         task.setStatus(taskDTO.getStatus());
         task.setPriority(taskDTO.getPriority());
-        task.setAuthor(userService.findById(taskDTO.getAuthorId()));
+        task.setAuthor(userService.findEntityById(taskDTO.getAuthorId()));
         if (taskDTO.getExecutorId() != null) {
-            task.setExecutor(userService.findById(taskDTO.getExecutorId()));
+            task.setExecutor(userService.findEntityById(taskDTO.getExecutorId()));
         }
     }
 }

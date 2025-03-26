@@ -1,9 +1,7 @@
 package ru.mzuev.taskmanagementsystem;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -42,14 +40,14 @@ public class TaskControllerTest {
         restTemplate.postForEntity("/api/auth/register", adminRegisterRequest, String.class);
         AuthResponse adminAuth = restTemplate.postForObject("/api/auth/login", adminRegisterRequest, AuthResponse.class);
         adminToken = "Bearer " + adminAuth.getToken();
-        adminId = userService.findByEmail("admin@test.com").getId();
+        adminId = userService.findDTOByEmail("admin@test.com").getId();
 
         // Регистрация и аутентификация исполнителя
         AuthRequest executorRegisterRequest = new AuthRequest("executor@test.com", "execPass");
         restTemplate.postForEntity("/api/auth/register", executorRegisterRequest, String.class);
         AuthResponse executorAuth = restTemplate.postForObject("/api/auth/login", executorRegisterRequest, AuthResponse.class);
         executorToken = "Bearer " + executorAuth.getToken();
-        executorId = userService.findByEmail("executor@test.com").getId();
+        executorId = userService.findDTOByEmail("executor@test.com").getId();
 
         // Регистрация и аутентификация НЕ исполнителя
         AuthRequest anotherUserRegisterRequest = new AuthRequest("anotheruser@test.com", "anotherPass");
@@ -109,7 +107,7 @@ public class TaskControllerTest {
 
     @Test
     void updateStatus_ExecutorRole_ShouldUpdateStatus() {
-        StatusUpdateRequest statusUpdate = new StatusUpdateRequest("IN_PROGRESS");
+        StatusUpdateRequest statusUpdate = new StatusUpdateRequest("в работе");
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", executorToken);
@@ -122,12 +120,12 @@ public class TaskControllerTest {
                 TaskDTO.class
         );
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody().getStatus()).isEqualTo("IN_PROGRESS");
+        assertThat(response.getBody().getStatus()).isEqualTo("в работе");
     }
 
     @Test
     void updateStatus_NonExecutorRole_ShouldReturnForbidden() {
-        StatusUpdateRequest statusUpdate = new StatusUpdateRequest("IN_PROGRESS");
+        StatusUpdateRequest statusUpdate = new StatusUpdateRequest("в работе");
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", anotherUserToken);
