@@ -34,7 +34,7 @@ public class TaskController {
 
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN') or @taskService.isExecutor(#id, authentication.name)")
-    public ResponseEntity<TaskDTO> updateTaskStatus(@PathVariable Long id, @RequestBody StatusUpdateRequest statusUpdateRequest) {
+    public ResponseEntity<TaskDTO> updateTaskStatus(@PathVariable Long id, @Valid @RequestBody StatusUpdateRequest statusUpdateRequest) {
         TaskDTO updatedTaskDTO = taskService.updateTaskStatus(id, statusUpdateRequest.getStatus());
         return ResponseEntity.ok(updatedTaskDTO);
     }
