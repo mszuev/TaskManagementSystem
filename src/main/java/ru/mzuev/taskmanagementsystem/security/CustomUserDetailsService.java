@@ -10,12 +10,22 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import java.util.Collections;
 
+/**
+ * Сервис для загрузки данных пользователя из БД в контекст Spring Security.
+ */
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
+    /**
+     * Загружает пользователя по email для аутентификации.
+     *
+     * @param email Email пользователя.
+     * @return Объект UserDetails с данными пользователя.
+     * @throws UsernameNotFoundException Если пользователь не найден.
+     */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)

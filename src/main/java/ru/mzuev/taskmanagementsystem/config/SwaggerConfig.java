@@ -5,10 +5,18 @@ import io.swagger.v3.oas.models.info.Info;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-// /swagger-ui/index.html
+/**
+ * Конфигурация Swagger/OpenAPI для генерации документации API.
+ * Документация доступна по адресу: <code>/swagger-ui/index.html</code>.
+ */
 @Configuration
 public class SwaggerConfig {
 
+    /**
+     * Создает кастомную конфигурацию OpenAPI с описанием системы управления задачами.
+     *
+     * @return Объект OpenAPI с метаданными API.
+     */
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()

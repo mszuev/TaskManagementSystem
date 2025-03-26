@@ -12,10 +12,19 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Глобальный обработчик исключений. Преобразует исключения в структурированные ответы API
+ * с использованием {@link ProblemDetail}.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Для обработки ошибок валидации DTO (@Valid)
+    /**
+     * Обрабатывает ошибки валидации полей DTO.
+     *
+     * @param ex Исключение {@link MethodArgumentNotValidException}.
+     * @return Ответ с HTTP-статусом 400, содержащий детализацию ошибок валидации.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidationExceptions(MethodArgumentNotValidException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -36,6 +45,12 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Обрабатывает отсутствие задачи.
+     *
+     * @param ex Исключение {@link TaskNotFoundException}.
+     * @return Ответ с HTTP-статусом 404 и сообщением об ошибке.
+     */
     @ExceptionHandler(TaskNotFoundException.class)
     public ProblemDetail handleTaskNotFound(TaskNotFoundException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -47,6 +62,12 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Обрабатывает конфликт при создании дублирующей задачи.
+     *
+     * @param ex Исключение {@link TaskAlreadyExistsException}.
+     * @return Ответ с HTTP-статусом 409 и сообщением об ошибке.
+     */
     @ExceptionHandler(TaskAlreadyExistsException.class)
     public ProblemDetail handleTaskAlreadyExists(TaskAlreadyExistsException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -58,6 +79,12 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Обрабатывает отказ в доступе к ресурсу.
+     *
+     * @param ex Исключение {@link AccessDeniedException}.
+     * @return Ответ с HTTP-статусом 403 и сообщением об ошибке.
+     */
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -69,6 +96,12 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Обрабатывает ошибки авторизации Spring Security (например, срабатывание @PreAuthorize).
+     *
+     * @param ex Исключение {@link AuthorizationDeniedException}.
+     * @return Ответ с HTTP-статусом 403 и сообщением об ошибке.
+     */
     // для @PreAuthorize
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ProblemDetail handleAuthorizationDenied(AuthorizationDeniedException ex) {
@@ -81,6 +114,12 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Обрабатывает конфликт при регистрации пользователя с существующим email.
+     *
+     * @param ex Исключение {@link UserAlreadyExistsException}.
+     * @return Ответ с HTTP-статусом 409 и email конфликтующего пользователя.
+     */
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ProblemDetail handleUserAlreadyExists(UserAlreadyExistsException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -92,6 +131,12 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Обрабатывает отсутствие пользователя.
+     *
+     * @param ex Исключение {@link UserNotFoundException}.
+     * @return Ответ с HTTP-статусом 404 и сообщением об ошибке.
+     */
     @ExceptionHandler(UserNotFoundException.class)
     public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -103,6 +148,12 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Обрабатывает отсутствие комментария.
+     *
+     * @param ex Исключение {@link CommentNotFoundException}.
+     * @return Ответ с HTTP-статусом 404 и идентификатором комментария.
+     */
     @ExceptionHandler(CommentNotFoundException.class)
     public ProblemDetail handleCommentNotFound(CommentNotFoundException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -114,6 +165,12 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Обрабатывает неверные учетные данные при аутентификации.
+     *
+     * @param ex Исключение {@link InvalidCredentialsException}.
+     * @return Ответ с HTTP-статусом 401 и сообщением об ошибке.
+     */
     @ExceptionHandler(InvalidCredentialsException.class)
     public ProblemDetail handleInvalidCredentials(InvalidCredentialsException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -125,6 +182,12 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    /**
+     * Обрабатывает все непредвиденные исключения.
+     *
+     * @param ex Исключение {@link Exception}.
+     * @return Ответ с HTTP-статусом 500 и общим сообщением об ошибке.
+     */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneralException(Exception ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(

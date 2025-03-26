@@ -16,7 +16,7 @@ import java.io.IOException;
 
 /**
  * Фильтр, который перехватывает каждый HTTP-запрос, извлекает JWT-токен из заголовка Authorization,
- * проверяет его валидность и устанавливает аутентификацию, если токен корректный
+ * проверяет его валидность и устанавливает аутентификацию в контекст Spring Security, если токен корректный
  */
 @Component
 @RequiredArgsConstructor
@@ -25,6 +25,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
 
+    /**
+     * Обрабатывает каждый HTTP-запрос для проверки JWT.
+     *
+     * @param request HTTP-запрос.
+     * @param response HTTP-ответ.
+     * @param filterChain Цепочка фильтров.
+     * @throws ServletException В случае ошибок сервлета.
+     * @throws IOException В случае ошибок ввода/вывода.
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {

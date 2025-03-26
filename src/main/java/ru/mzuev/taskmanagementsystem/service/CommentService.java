@@ -17,6 +17,9 @@ import ru.mzuev.taskmanagementsystem.model.Task;
 import ru.mzuev.taskmanagementsystem.model.User;
 import ru.mzuev.taskmanagementsystem.repository.CommentRepository;
 
+/**
+ * Сервис для работы с комментариями.
+ */
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -26,6 +29,13 @@ public class CommentService {
     private final UserService userService;
     private final CommentMapper commentMapper;
 
+    /**
+     * Создает комментарий для задачи.
+     *
+     * @param commentRequest Запрос с данными комментария.
+     * @return Созданный комментарий в формате DTO.
+     * @throws AccessDeniedException Если пользователь не является администратором или исполнителем задачи.
+     */
     @Transactional
     public CommentDTO createComment(CommentRequest commentRequest) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -48,6 +58,14 @@ public class CommentService {
         return commentMapper.toDTO(savedComment);
     }
 
+    /**
+     * Возвращает комментарии для указанной задачи с пагинацией.
+     *
+     * @param taskId Идентификатор задачи.
+     * @param pageable Параметры пагинации.
+     * @return Страница комментариев в формате DTO.
+     * @throws TaskNotFoundException Если задача не найдена.
+     */
     @Transactional(readOnly = true)
     public Page<CommentDTO> getCommentsByTask(Long taskId, Pageable pageable) {
         if (!taskService.existsById(taskId)) {

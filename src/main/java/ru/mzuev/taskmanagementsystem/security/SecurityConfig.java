@@ -21,7 +21,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 /**
+ * Конфигурация безопасности Spring. Настраивает CORS, JWT-аутентификацию, права доступа к эндпоинтам.
  * Конфигурация Spring Security:
+ * - Включает CORS
  * - Отключает CSRF и сессионное хранение (stateless)
  * - Настраивает публичный доступ к эндпоинтам для аутентификации и Swagger
  * - Все остальные запросы требуют аутентификации
@@ -33,6 +35,13 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /**
+     * Конфигурирует цепочку фильтров безопасности.
+     *
+     * @param http Объект конфигурации HTTP-безопасности.
+     * @return Настроенная цепочка фильтров.
+     * @throws Exception В случае ошибки конфигурации.
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -56,7 +65,11 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Конфигурация CORS
+    /**
+     * Настраивает CORS для разрешения запросов с определенных источников.
+     *
+     * @return Конфигурация CORS.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -90,18 +103,33 @@ public class SecurityConfig {
         return source;
     }
 
-    // Bean для кодирования паролей с использованием BCrypt
+    /**
+     * Предоставляет кодировщик паролей (BCrypt).
+     *
+     * @return Экземпляр BCryptPasswordEncoder.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Bean для управления аутентификацией
+    /**
+     * Предоставляет менеджер аутентификации.
+     *
+     * @param authConfig Конфигурация аутентификации.
+     * @return Менеджер аутентификации.
+     * @throws Exception В случае ошибки.
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
+    /**
+     * Настраивает источник сообщений для локализации.
+     *
+     * @return Источник сообщений.
+     */
     @Bean
     public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();

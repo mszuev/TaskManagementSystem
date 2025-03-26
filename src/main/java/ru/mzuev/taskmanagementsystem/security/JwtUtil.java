@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 
+/**
+ * Утилита для работы с JWT-токенами: генерация, валидация, извлечение данных.
+ */
 @Component
 public class JwtUtil {
 
@@ -19,6 +22,13 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long jwtExpirationInMs;
 
+    /**
+     * Генерирует JWT-токен для пользователя.
+     *
+     * @param email Email пользователя.
+     * @param role Роль пользователя.
+     * @return Сгенерированный токен.
+     */
     public String generateToken(String email, String role) {
         Key key = Keys.hmacShaKeyFor(secret.getBytes());
         return Jwts.builder()
@@ -30,6 +40,12 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     * Извлекает email из токена.
+     *
+     * @param token JWT-токен.
+     * @return Email пользователя.
+     */
     public String extractEmail(String token) {
         return Jwts.parser()
                 .setSigningKey(secret.getBytes())
@@ -39,6 +55,12 @@ public class JwtUtil {
                 .getSubject();
     }
 
+    /**
+     * Проверяет валидность токена.
+     *
+     * @param token JWT-токен.
+     * @return true, если токен валиден, иначе false.
+     */
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
