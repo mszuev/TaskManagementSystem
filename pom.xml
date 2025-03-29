@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>ru.mzuev</groupId>
     <artifactId>TaskManagementSystem</artifactId>
@@ -115,7 +115,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.11.2</version>
                 <configuration>
-                    <source>17</source> <!-- Ваша версия Java -->
+                    <source>17</source>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
